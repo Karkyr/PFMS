@@ -12,6 +12,13 @@ enum TypeCategory
 	Other = 6
 };
 
+enum TypePrint
+{
+	day = 0,
+	week = 1,
+	month = 2
+};
+
 class Client
 {
 
@@ -29,18 +36,17 @@ public:
 	void PrintCardInfo();
 	void TopUp(int a);
 	void Withdraw(int a);
-	void PrintMoney();
+	void PrintBalance();
 	void ChangePIN(short newPIN);
 };
 
 class Expenses
 {
 	std::map<TypeCategory, int> expenses;
-	/*std::map<TypeCategory, int> top3Category;
-	std::map<TypeCategory, int> top3Sum;*/
 	int sumEpxenses;
 
 	void AddExpense(int sum, TypeCategory category);
 	void PrintTop3Category();
 	void PrintTop3Sum();
+	void PrintExpenseOf(TypePrint typePrint);
 };
