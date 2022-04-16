@@ -36,6 +36,11 @@ public:
 class Expenses
 {
 	std::map<TypeCategory, int> expenses;
+	/*std::map<TypeCategory, int> top3Category;
+	std::map<TypeCategory, int> top3Sum;*/
 	int sumEpxenses;
+
 	void AddExpense(int sum, TypeCategory category);
+	void PrintTop3Category();
+	void PrintTop3Sum();
 };
