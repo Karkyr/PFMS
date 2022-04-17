@@ -1,6 +1,13 @@
 #pragma once
+
 #include <iostream>
 #include <map>
+#include <vector>
+
+#define ROOT C:\\Acer\Documents
+
+using std::string;
+
 enum TypeCategory
 {
 	Food = 0,
@@ -12,9 +19,21 @@ enum TypeCategory
 	Other = 6
 };
 
+enum TypePrint
+{
+	day = 0,
+	week = 1,
+	month = 2
+};
+
 class Client
 {
-
+	string login;
+	int password;
+	string name;
+	std::vector<Card> cards;
+public:
+	Client(std::string login, int password, std::string name);
 };
 
 class Card
@@ -29,7 +48,7 @@ public:
 	void PrintCardInfo();
 	void TopUp(int a);
 	void Withdraw(int a);
-	void PrintMoney();
+	void PrintBalance();
 	void ChangePIN(short newPIN);
 };
 
@@ -37,5 +56,9 @@ class Expenses
 {
 	std::map<TypeCategory, int> expenses;
 	int sumEpxenses;
+public:
 	void AddExpense(int sum, TypeCategory category);
+	void PrintTop3CategoryOf(TypePrint typePrint);
+	void PrintTop3SumOf(TypePrint typePrint);
+	void PrintExpenseOf(TypePrint typePrint);
 };
