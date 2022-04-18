@@ -1,17 +1,30 @@
 #include "Client.h"
 
-Client::Client(std::string login, int password, std::string name)
-{
+using std::cout;
+using std::cin;
 
+Client::Client(string login, int password, string name)
+{
+	this->login = login;
+	this->password = password;
+	this->name = name;
 }
 
-Card::Card(short PIN, bool isCredit)
+void Client::CreateCard(short PIN, bool isCredit)
 {
-
+	cards.push_back(Card(PIN, isCredit));
 }
+
+void Client::SetPassword(int password)
+{
+	this->password = password;
+}
+
+Card::Card(short PIN, bool isCredit) : PIN{ PIN }, isCredit{ isCredit }, isBlocked{ false }, countMoney{ 0 }{};
 
 void Card::PrintCardInfo()
 {
+	cout << "Balance : " << countMoney;
 }
 
 void Card::TopUp(int a)

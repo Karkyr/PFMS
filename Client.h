@@ -33,7 +33,9 @@ class Client
 	string name;
 	std::vector<Card> cards;
 public:
-	Client(std::string login, int password, std::string name);
+	Client(string login, int password, string name);
+	void CreateCard(short PIN, bool isCredit);
+	void SetPassword(int password);
 };
 
 class Card
