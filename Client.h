@@ -26,6 +26,33 @@ enum TypePrint
 	month = 2
 };
 
+class Expenses
+{
+	std::vector<std::pair<TypeCategory, int>> expenses;
+	int sumEpxenses;
+public:
+	void AddExpense(int sum, TypeCategory category);
+	void PrintTop3CategoryOf(TypePrint typePrint);
+	void PrintTop3SumOf(TypePrint typePrint);
+	void PrintExpenseOf(TypePrint typePrint);
+};
+
+class Card
+{
+	int balance;
+	short PIN;
+	bool isBlocked;
+	bool isCredit;
+	Expenses expenses;
+public:
+	Card(short PIN, bool isCredit);
+	void PrintCardInfo();
+	void TopUp(int a);
+	void PrintBalance();
+	void ChangePIN(short newPIN);
+	void BlockCard();
+};
+
 class Client
 {
 	string login;
@@ -38,29 +65,5 @@ public:
 	void SetPassword(int password);
 };
 
-class Card
-{
-	int countMoney;
-	short PIN;
-	bool isBlocked;
-	bool isCredit;
-	Expenses expenses;
-public:
-	Card(short PIN, bool isCredit);
-	void PrintCardInfo();
-	void TopUp(int a);
-	void Withdraw(int a);
-	void PrintBalance();
-	void ChangePIN(short newPIN);
-};
 
-class Expenses
-{
-	std::map<TypeCategory, int> expenses;
-	int sumEpxenses;
-public:
-	void AddExpense(int sum, TypeCategory category);
-	void PrintTop3CategoryOf(TypePrint typePrint);
-	void PrintTop3SumOf(TypePrint typePrint);
-	void PrintExpenseOf(TypePrint typePrint);
-};
+
