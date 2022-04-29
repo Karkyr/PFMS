@@ -3,6 +3,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <ctime>
+#include <windows.h>
+#include <algorithm>
 
 #define ROOT C:\\Acer\Documents
 
@@ -21,14 +24,28 @@ enum TypeCategory
 
 enum TypePrint
 {
-	day = 0,
-	week = 1,
-	month = 2
+	Day = 0,
+	Month = 1
+};
+
+enum TypeValuta
+{
+	Grivna = 0,
+	Dollar = 1,
+	Euro = 2
+};
+
+struct Event
+{
+	TypeCategory category;
+	int sum;
+	SYSTEMTIME st;
+	Event(TypeCategory category, int sum);
 };
 
 class Expenses
 {
-	std::vector<std::pair<TypeCategory, int>> expenses;
+	std::vector<Event> expenses;
 	int sumEpxenses;
 public:
 	void AddExpense(int sum, TypeCategory category);
@@ -41,11 +58,12 @@ class Card
 {
 	int balance;
 	short PIN;
+	TypeValuta valuta;
 	bool isBlocked;
 	bool isCredit;
 	Expenses expenses;
 public:
-	Card(short PIN, bool isCredit);
+	Card(short PIN, bool isCredit, TypeValuta valuta);
 	void PrintCardInfo();
 	void TopUp(int a);
 	void PrintBalance();
@@ -61,8 +79,8 @@ class Client
 	std::vector<Card> cards;
 public:
 	Client(string login, int password, string name);
-	void CreateCard(short PIN, bool isCredit);
-	void SetPassword(int password);
+	void CreateCard(short PIN, bool isCredit, TypeValuta valuta);
+	bool ChangePassword(int password, int newPassword);
 };
 
 
