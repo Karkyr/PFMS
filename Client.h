@@ -3,6 +3,10 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <ctime>
+#include <windows.h>
+#include <algorithm>
+#include <fstream>
 
 #define ROOT C:\\Acer\Documents
 
@@ -21,44 +25,53 @@ enum TypeCategory
 
 enum TypePrint
 {
-	day = 0,
-	week = 1,
-	month = 2
+	Day = 0,
+	Month = 1
 };
+
+enum TypeValuta
+{
+	Grivna = 0,
+	Dollar = 1,
+	Euro = 2
+};
+
+struct Event
+{
+	TypeCategory category;
+	int sum;
+	SYSTEMTIME st;
+	Event(TypeCategory category, int sum);
+	Event(TypeCategory category, int sum, SYSTEMTIME st);
+};
+
+class Expenses
+{
+	std::vector<Event> expenses;
+public:
+	void AddExpense(int sum, TypeCategory category);
+	void PrintTop3CategoryOf(TypePrint typePrint);
+	void PrintTop3SumOf(TypePrint typePrint);
+	void PrintExpenseOf(TypePrint typePrint);
+	friend class Client;
+};
+
 
 class Client
 {
 	string login;
 	int password;
 	string name;
-	std::vector<Card> cards;
-public:
-	Client(std::string login, int password, std::string name);
-};
-
-class Card
-{
-	int countMoney;
-	short PIN;
-	bool isBlocked;
-	bool isCredit;
 	Expenses expenses;
 public:
-	Card(short PIN, bool isCredit);
-	void PrintCardInfo();
-	void TopUp(int a);
-	void Withdraw(int a);
-	void PrintBalance();
-	void ChangePIN(short newPIN);
-};
-
-class Expenses
-{
-	std::map<TypeCategory, int> expenses;
-	int sumEpxenses;
-public:
-	void AddExpense(int sum, TypeCategory category);
+	Client(string login, int password, string name);
+	void AddExpenses(int sum, TypeCategory category);
+	bool ChangePassword(int password, int newPassword);
 	void PrintTop3CategoryOf(TypePrint typePrint);
 	void PrintTop3SumOf(TypePrint typePrint);
 	void PrintExpenseOf(TypePrint typePrint);
 };
+
+void SaveExpensesToFile(Event& ev);
+
+void LoadExpensesFromFile(std::vector<Event>& m);
