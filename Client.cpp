@@ -6,17 +6,42 @@ using std::endl;
 
 Event::Event(TypeCategory category, int sum) :
 	category{ category }, sum{ sum } {GetSystemTime(&st);}
+Event::Event(TypeCategory category, int sum, SYSTEMTIME st) :
+	category{ category }, sum{ sum }, st{ st }{}
+
+void SaveExpensesToFile(Event& ev)
+{
+	std::ofstream fout;
+	fout.open("log.dat", std::ios::binary | std::ios::app);
+	fout << ev.category << " " << ev.sum << " " << ev.st.wDay << " " << ev.st.wMonth << " " << ev.st.wYear << " ";
+	fout.close();
+}
+
+void LoadExpensesFromFile(std::vector<Event>& m)
+{
+	std::ifstream fin("log.dat", std::ios::binary);
+	int category;
+	int sum;
+	SYSTEMTIME st;
+	int i = 0;
+	while (fin >> category >> sum >> st.wDay >> st.wMonth >> st.wYear)
+	{
+		m.push_back(Event(TypeCategory(category), sum, st));
+	}
+	fin.close();
+}
+
+void Client::AddExpenses(int sum, TypeCategory category)
+{
+	expenses.AddExpense(sum, category);
+}
 
 Client::Client(string login, int password, string name)
 {
 	this->login = login;
 	this->password = password;
 	this->name = name;
-}
-
-void Client::CreateCard(short PIN, bool isCredit, TypeValuta valuta)
-{
-	cards.push_back(Card(PIN, isCredit, valuta));
+	LoadExpensesFromFile(expenses.expenses);
 }
 
 bool Client::ChangePassword(int password, int newPassword)
@@ -29,73 +54,26 @@ bool Client::ChangePassword(int password, int newPassword)
 	return false;
 }
 
-Card::Card(short PIN, bool isCredit, TypeValuta valuta)
-	: PIN{ PIN }, isCredit{ isCredit }, valuta{valuta}, isBlocked{false}, balance{0}{};
-
-void Card::PrintCardInfo()
+void Client::PrintTop3CategoryOf(TypePrint typePrint)
 {
-	cout << "Balance : " << balance << endl;
-	cout << "Valuta : ";
-	switch (valuta)
-	{
-	case Grivna:
-		cout << "Grivna" << endl;
-		break;
-	case Dollar:
-		cout << "Dollar" << endl;
-		break;
-	case Euro:
-		cout << "Euro" << endl;
-		break;
-	default:
-		break;
-	}
-	cout << "Blocking : " << isBlocked ? cout << "Yes" : cout << "No" << endl;
-	cout << "Credit : " << isCredit ? cout << "Yes" : cout << "No" << endl;
+	expenses.PrintTop3CategoryOf(typePrint);
 }
 
-void Card::TopUp(int a)
+void Client::PrintTop3SumOf(TypePrint typePrint)
 {
-	balance += a;
+	expenses.PrintTop3SumOf(typePrint);
 }
 
-void Card::PrintBalance()
+void Client::PrintExpenseOf(TypePrint typePrint)
 {
-	cout << "Balance : " << balance << endl;
-}
-
-void Card::ChangePIN(short newPIN)
-{
-	PIN = newPIN;
-}
-
-void Card::BlockCard()
-{
-	string a;
-	
-	cout << "You are sure what you want to block the card" << endl
-		<< "Y(yes) / N(no)";
-	do
-	{
-		cin >> a;
-	} while (a != "Y" || a != "yes" || a != "no" || a != "N");
-	if (a == "Y" || a == "yes")
-	{
-		isBlocked = true;
-		cout << "Thats your unique code : " << rand() % 99999 + 10000 << endl;
-		cout << "!!!Please remember this code," 
-			<< " you will need this code if you want to unlock the card!!!" << endl;
-	}	
-	else
-	{
-		return;
-	}
+	expenses.PrintExpenseOf(typePrint);
 }
 
 void Expenses::AddExpense(int sum, TypeCategory category)
 {
 	Event a(category, sum);
 	expenses.push_back(a);
+	SaveExpensesToFile(a);
 }
 
 void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
@@ -110,12 +88,12 @@ void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
 		{
 			if (expenses[i].st.wDay != now.wDay ||
 				expenses[i].st.wMonth != now.wMonth ||
-				expenses[i].st.wYear != now.wYear) {return;}
+				expenses[i].st.wYear != now.wYear) {continue;}
 		}
 		else if (typePrint == Month)
 		{
 			if (expenses[i].st.wMonth != now.wMonth ||
-				expenses[i].st.wYear != now.wYear) {return;}
+				expenses[i].st.wYear != now.wYear) {continue;}
 		}
 		switch (expenses[i].category)
 		{
@@ -145,43 +123,43 @@ void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
 		}
 	}
 	TypeCategory buff1, buff2, buff3;
-	std::vector<std::pair<TypeCategory, int>> m;
-	m.push_back(std::pair<TypeCategory, int>(Food, food));
-	m.push_back(std::pair<TypeCategory, int>(PublicService, publicService));
-	m.push_back(std::pair<TypeCategory, int>(Rest, rest));
-	m.push_back(std::pair<TypeCategory, int>(Transport, transport));
-	m.push_back(std::pair<TypeCategory, int>(Health, health));
-	m.push_back(std::pair<TypeCategory, int>(Clothes, clothes));
-	m.push_back(std::pair<TypeCategory, int>(Other, other));
+	std::vector<std::pair<int, TypeCategory>> m;
+	m.push_back(std::pair<int, TypeCategory>(food, Food));
+	m.push_back(std::pair<int, TypeCategory>(publicService, PublicService));
+	m.push_back(std::pair<int, TypeCategory>(rest, Rest));
+	m.push_back(std::pair<int, TypeCategory>(transport, Transport));
+	m.push_back(std::pair<int, TypeCategory>(health, Health));
+	m.push_back(std::pair<int, TypeCategory>(clothes, Clothes));
+	m.push_back(std::pair<int, TypeCategory>(other, Other));
 
 	std::sort(m.begin(), m.end());
-	buff1 = m[m.size() - 1].first;
-	buff2 = m[m.size() - 2].first;
-	buff3 = m[m.size() - 3].first;
+	buff1 = m[m.size() - 1].second;
+	buff2 = m[m.size() - 2].second;
+	buff3 = m[m.size() - 3].second;
 
 	cout << "Топ 3 популярні категорії: ";
 	switch (buff1)
 	{
 	case Food:
-		cout << "Їжа |";
+		cout << "Їжа | ";
 		break;
 	case PublicService:
-		cout << "Комунальні послуги |";
+		cout << "Комунальні послуги | ";
 		break;
 	case Rest:
-		cout << "Відпочинок |";
+		cout << "Відпочинок | ";
 		break;
 	case Transport:
-		cout << "Транспорт |";
+		cout << "Транспорт | ";
 		break;
 	case Health:
-		cout << "Здоровья та краса |";
+		cout << "Здоровья та краса | ";
 		break;
 	case Clothes:
-		cout << "Одяг |";
+		cout << "Одяг | ";
 		break;
 	case Other:
-		cout << "Інше |";
+		cout << "Інше | ";
 		break;
 	default:
 		break;
@@ -189,25 +167,25 @@ void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
 	switch (buff2)
 	{
 	case Food:
-		cout << "Їжа |";
+		cout << "Їжа | ";
 		break;
 	case PublicService:
-		cout << "Комунальні послуги |";
+		cout << "Комунальні послуги | ";
 		break;
 	case Rest:
-		cout << "Відпочинок |";
+		cout << "Відпочинок | ";
 		break;
 	case Transport:
-		cout << "Транспорт |";
+		cout << "Транспорт | ";
 		break;
 	case Health:
-		cout << "Здоровья та краса |";
+		cout << "Здоровья та краса | ";
 		break;
 	case Clothes:
-		cout << "Одяг |";
+		cout << "Одяг | ";
 		break;
 	case Other:
-		cout << "Інше |";
+		cout << "Інше | ";
 		break;
 	default:
 		break;
@@ -218,22 +196,22 @@ void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
 		cout << "Їжа" << endl;
 		break;
 	case PublicService:
-		cout << "Комунальні послуги |" << endl;
+		cout << "Комунальні послуги" << endl;
 		break;
 	case Rest:
-		cout << "Відпочинок |" << endl;
+		cout << "Відпочинок" << endl;
 		break;
 	case Transport:
-		cout << "Транспорт |" << endl;
+		cout << "Транспорт" << endl;
 		break;
 	case Health:
-		cout << "Здоровья та краса |" << endl;
+		cout << "Здоровья та краса" << endl;
 		break;
 	case Clothes:
-		cout << "Одяг |" << endl;
+		cout << "Одяг" << endl;
 		break;
 	case Other:
-		cout << "Інше |" << endl;
+		cout << "Інше" << endl;
 		break;
 	default:
 		break;
@@ -243,10 +221,98 @@ void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
 
 void Expenses::PrintTop3SumOf(TypePrint typePrint)
 {
-
+	SYSTEMTIME now;
+	GetSystemTime(&now);
+	int buff1 = expenses[0].sum, buff2 = expenses[0].sum, buff3 = expenses[0].sum;
+	for (int i = 0; i < expenses.size(); i++)
+	{
+		if (typePrint == Day)
+		{
+			if (expenses[i].st.wDay != now.wDay ||
+				expenses[i].st.wMonth != now.wMonth ||
+				expenses[i].st.wYear != now.wYear) {
+				continue;
+			}
+		}
+		else if (typePrint == Month)
+		{
+			if (expenses[i].st.wMonth != now.wMonth ||
+				expenses[i].st.wYear != now.wYear) {
+				continue;
+			}
+		}
+		if (expenses[i].sum > buff1)
+		{
+			if (buff1 > buff2)
+			{
+				buff2 = buff1;
+			}
+			buff1 = expenses[i].sum;
+		}
+		else if (expenses[i].sum > buff2)
+		{
+			if (buff2 > buff3)
+			{
+				buff3 = buff2;
+			}
+			buff2 = expenses[i].sum;
+		}
+		else if (expenses[i].sum > buff3)
+		{
+			buff3 = expenses[i].sum;
+		}
+	}
+	cout << "Топ 3 великі суми: ";
+	cout << buff1 << " | " << buff2 << " | " << buff3 << " | " << endl;
 }
 
 void Expenses::PrintExpenseOf(TypePrint typePrint)
 {
-
+	SYSTEMTIME now;
+	GetSystemTime(&now);
+	for (int i = 0; i < expenses.size(); i++)
+	{
+		if (typePrint == Day)
+		{
+			if (expenses[i].st.wDay != now.wDay ||
+				expenses[i].st.wMonth != now.wMonth ||
+				expenses[i].st.wYear != now.wYear) {
+				continue;
+			}
+		}
+		else if (typePrint == Month)
+		{
+			if (expenses[i].st.wMonth != now.wMonth ||
+				expenses[i].st.wYear != now.wYear) {
+				continue;
+			}
+		}
+		switch (expenses[i].category)
+		{
+		case Food:
+			cout << "Їжа | ";
+			break;
+		case PublicService:
+			cout << "Комунальні послуги | ";
+			break;
+		case Rest:
+			cout << "Відпочинок | ";
+			break;
+		case Transport:
+			cout << "Транспорт | ";
+			break;
+		case Health:
+			cout << "Здоровья та краса | ";
+			break;
+		case Clothes:
+			cout << "Одяг | ";
+			break;
+		case Other:
+			cout << "Інше | ";
+			break;
+		default:
+			break;
+		}
+		cout << expenses[i].sum << endl;
+	}
 }

@@ -6,6 +6,7 @@
 #include <ctime>
 #include <windows.h>
 #include <algorithm>
+#include <fstream>
 
 #define ROOT C:\\Acer\Documents
 
@@ -41,47 +42,36 @@ struct Event
 	int sum;
 	SYSTEMTIME st;
 	Event(TypeCategory category, int sum);
+	Event(TypeCategory category, int sum, SYSTEMTIME st);
 };
 
 class Expenses
 {
 	std::vector<Event> expenses;
-	int sumEpxenses;
 public:
 	void AddExpense(int sum, TypeCategory category);
 	void PrintTop3CategoryOf(TypePrint typePrint);
 	void PrintTop3SumOf(TypePrint typePrint);
 	void PrintExpenseOf(TypePrint typePrint);
+	friend class Client;
 };
 
-class Card
-{
-	int balance;
-	short PIN;
-	TypeValuta valuta;
-	bool isBlocked;
-	bool isCredit;
-	Expenses expenses;
-public:
-	Card(short PIN, bool isCredit, TypeValuta valuta);
-	void PrintCardInfo();
-	void TopUp(int a);
-	void PrintBalance();
-	void ChangePIN(short newPIN);
-	void BlockCard();
-};
 
 class Client
 {
 	string login;
 	int password;
 	string name;
-	std::vector<Card> cards;
+	Expenses expenses;
 public:
 	Client(string login, int password, string name);
-	void CreateCard(short PIN, bool isCredit, TypeValuta valuta);
+	void AddExpenses(int sum, TypeCategory category);
 	bool ChangePassword(int password, int newPassword);
+	void PrintTop3CategoryOf(TypePrint typePrint);
+	void PrintTop3SumOf(TypePrint typePrint);
+	void PrintExpenseOf(TypePrint typePrint);
 };
 
+void SaveExpensesToFile(Event& ev);
 
-
+void LoadExpensesFromFile(std::vector<Event>& m);
