@@ -9,17 +9,56 @@ Event::Event(TypeCategory category, int sum) :
 Event::Event(TypeCategory category, int sum, SYSTEMTIME st) :
 	category{ category }, sum{ sum }, st{ st }{}
 
-void SaveExpensesToFile(Event& ev)
+bool IsPathExist(const std::string& s)
+{
+	struct stat buffer;
+	return (stat(s.c_str(), &buffer) == 0);
+}
+
+Client SignInAccount(string login, int password, string name)
+{
+	std::ifstream fin("accounts.dat", std::ios::binary);
+	string _login, _name, _path;
+	int _password;
+	while (fin >> _login >> _password >> _name >> _path)
+	{
+		if (login == _login && _password == password && _name == name)
+		{
+			fin.close();
+			Client c(login, password, name);
+			return c;
+		}
+	}
+	Client a(0,0,0);
+	return a;
+}
+
+Client CreateAccount(string login, int password, string name)
 {
 	std::ofstream fout;
-	fout.open("log.dat", std::ios::binary | std::ios::app);
+	if (!(IsPathExist(R"(Expenses\)")))
+	{
+		_mkdir(R"(Expenses\)");
+	}
+	string path = R"(Expenses\)" + name;
+	fout.open("accounts.dat", std::ios::binary | std::ios::app);
+	fout << login << " " << password << " " << name << " " << path << " ";
+	fout.close();
+	Client client(login, password, name);
+	return client;
+}
+
+void SaveExpensesToFile(Event& ev, string path)
+{
+	std::ofstream fout;
+	fout.open(path, std::ios::binary | std::ios::app);
 	fout << ev.category << " " << ev.sum << " " << ev.st.wDay << " " << ev.st.wMonth << " " << ev.st.wYear << " ";
 	fout.close();
 }
 
-void LoadExpensesFromFile(std::vector<Event>& m)
+void LoadExpensesFromFile(std::vector<Event>& m, string path)
 {
-	std::ifstream fin("log.dat", std::ios::binary);
+	std::ifstream fin(path, std::ios::binary);
 	int category;
 	int sum;
 	SYSTEMTIME st;
@@ -31,9 +70,23 @@ void LoadExpensesFromFile(std::vector<Event>& m)
 	fin.close();
 }
 
+void Client::SetLogin(string login) { this->login = login; }
+
+void Client::SetPassword(int password) { this->password = password; }
+
+void Client::SetName(string name) { this->name = name; }
+
+string Client::GetName() { return name; }
+
+std::vector<Event>& Client::GetExpenses()
+{
+	return expenses.expenses;
+}
+
 void Client::AddExpenses(int sum, TypeCategory category)
 {
-	expenses.AddExpense(sum, category);
+	string path = R"(Expenses\)" + name + ".dat";
+	expenses.AddExpense(sum, category, path);
 }
 
 Client::Client(string login, int password, string name)
@@ -41,7 +94,8 @@ Client::Client(string login, int password, string name)
 	this->login = login;
 	this->password = password;
 	this->name = name;
-	LoadExpensesFromFile(expenses.expenses);
+	string path = R"(Expenses\)" + name + ".dat";
+	LoadExpensesFromFile(expenses.expenses, path);
 }
 
 bool Client::ChangePassword(int password, int newPassword)
@@ -64,16 +118,16 @@ void Client::PrintTop3SumOf(TypePrint typePrint)
 	expenses.PrintTop3SumOf(typePrint);
 }
 
-void Client::PrintExpenseOf(TypePrint typePrint)
+void Client::PrintExpensesOf(TypePrint typePrint)
 {
 	expenses.PrintExpenseOf(typePrint);
 }
 
-void Expenses::AddExpense(int sum, TypeCategory category)
+void Expenses::AddExpense(int sum, TypeCategory category, string path)
 {
 	Event a(category, sum);
 	expenses.push_back(a);
-	SaveExpensesToFile(a);
+	SaveExpensesToFile(a, path);
 }
 
 void Expenses::PrintTop3CategoryOf(TypePrint typePrint)
@@ -263,7 +317,7 @@ void Expenses::PrintTop3SumOf(TypePrint typePrint)
 		}
 	}
 	cout << "Топ 3 великі суми: ";
-	cout << buff1 << " | " << buff2 << " | " << buff3 << " | " << endl;
+	cout << buff1 << " | " << buff2 << " | " << buff3 << endl;
 }
 
 void Expenses::PrintExpenseOf(TypePrint typePrint)
