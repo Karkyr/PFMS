@@ -7,8 +7,9 @@
 #include <windows.h>
 #include <algorithm>
 #include <fstream>
-
-#define ROOT C:\\Acer\Documents
+#include <direct.h>
+#include <filesystem>
+#include <sys/stat.h>
 
 using std::string;
 
@@ -49,7 +50,7 @@ class Expenses
 {
 	std::vector<Event> expenses;
 public:
-	void AddExpense(int sum, TypeCategory category);
+	void AddExpense(int sum, TypeCategory category, string path);
 	void PrintTop3CategoryOf(TypePrint typePrint);
 	void PrintTop3SumOf(TypePrint typePrint);
 	void PrintExpenseOf(TypePrint typePrint);
@@ -65,13 +66,23 @@ class Client
 	Expenses expenses;
 public:
 	Client(string login, int password, string name);
+	Client();
+	void SetLogin(string login);
+	void SetPassword(int password);
+	void SetName(string name);
+	string GetName();
+	std::vector<Event>& GetExpenses();
 	void AddExpenses(int sum, TypeCategory category);
 	bool ChangePassword(int password, int newPassword);
 	void PrintTop3CategoryOf(TypePrint typePrint);
 	void PrintTop3SumOf(TypePrint typePrint);
-	void PrintExpenseOf(TypePrint typePrint);
+	void PrintExpensesOf(TypePrint typePrint);
 };
 
-void SaveExpensesToFile(Event& ev);
+	Client SignInAccount(string login, int password, string name);
+	Client CreateAccount(string login, int password, string name);
+	bool IsPathExist(const std::string& s);
+	void SaveExpensesToFile(Event& ev, string path);
+	void LoadExpensesFromFile(std::vector<Event>& m, string path);
 
-void LoadExpensesFromFile(std::vector<Event>& m);
+
